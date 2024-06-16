@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	eventhandlers "geminiProject/eventHandlers"
 	"geminiProject/gemini"
 	"geminiProject/utils"
 	"log"
@@ -56,6 +57,13 @@ func ReadRequest() string {
 	fmt.Println("Database to use:", databaseToUse)
 	if errorDatabase != nil {
 		fmt.Println("Error fetching Database:", errorDatabase)
+		return ""
+	}
+
+	projectStructure, errorStructure := eventhandlers.CodeDesigner(userInput, stackToUse, approachToUse, databaseToUse)
+	fmt.Println("Project Structure:", projectStructure)
+	if errorStructure != nil {
+		fmt.Println("Error fetching Structure:", errorStructure)
 		return ""
 	}
 
@@ -119,13 +127,18 @@ func fetchBestStack(input string, approachToUse string) (string, error) {
 	if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
 		log.Fatal(err)
 	}
-	bestStack := ""
+	var bestStack string
 	for _, cad := range *generateResponse.Candidates {
 		if cad.Content != nil {
 			for _, part := range cad.Content.Parts {
 				bestStack = part
 			}
 		}
+	}
+	var bestStackMap map[string]interface{}
+	err = json.Unmarshal([]byte(bestStack), &bestStackMap)
+	if err != nil {
+		return "", fmt.Errorf("error unmarshalling project structure: %v", err)
 	}
 
 	return bestStack, nil

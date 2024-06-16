@@ -13,3 +13,5 @@ var PathApproach = map[string]interface{}{
 		"Server-side": nil,
 	},
 }
+
+var CodeRulesArray = []string{"Modular", "Clean Code", "Easy to Read", "Easy to Customize", "Basic Security (Validation)"}
