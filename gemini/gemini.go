@@ -38,5 +38,4 @@ func GetGeminiCLient() *genai.GenerativeModel {
 		GeminiInit()
 	}
 	return Geminimodel
-
 }
