@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	gemini "geminiProject/gemini"
+	"geminiProject/gemini"
+	processhandlers "geminiProject/processHandlers"
 
 	"github.com/joho/godotenv"
 )
@@ -15,4 +16,6 @@ func main() {
 	//Initialize gemini api
 	gemini.GeminiInit()
 
+	response := processhandlers.ReadRequest()
+	fmt.Print("Response:", response)
 }

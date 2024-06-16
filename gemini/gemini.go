@@ -22,7 +22,7 @@ func GeminiInit() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Close()
+	//defer client.Close()
 
 	// The Gemini 1.5 models are versatile and work with most use cases
 	Geminimodel = client.GenerativeModel("gemini-1.5-flash")
@@ -38,5 +38,4 @@ func GetGeminiCLient() *genai.GenerativeModel {
 		GeminiInit()
 	}
 	return Geminimodel
-
 }
