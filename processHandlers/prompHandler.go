@@ -51,6 +51,15 @@ func ReadRequest() string {
 	}
 	fmt.Print("Stack to use:", stackToUse)
 
+	//database to use
+	databaseToUse, errorDatabase := fetchDatabase(userInput, stackToUse, approachToUse)
+	fmt.Println("Database to use:", databaseToUse)
+	if errorDatabase != nil {
+		fmt.Println("Error fetching Database:", errorDatabase)
+		return ""
+	}
+
+	//Language to use
 	//Return the user input
 	return userInput
 }
@@ -95,7 +104,7 @@ func fetchBestStack(input string, approachToUse string) (string, error) {
 	// Construct the prompt
 	// Construct the prompt
 	prompt := fmt.Sprintf("Given the requirement:\n%s\n", input)
-	prompt += fmt.Sprintf("\n tell me just the name of **ideal** languaguage or framework stack which we should use for %s?\n", approachToUse)
+	prompt += fmt.Sprintf("\n tell me just the name of **ideal** languaguage or framework stack which we should use for, as a json string %s?\n", approachToUse)
 
 	ctx := context.Background()
 
@@ -120,4 +129,36 @@ func fetchBestStack(input string, approachToUse string) (string, error) {
 	}
 
 	return bestStack, nil
+}
+
+func fetchDatabase(input string, stackToUse string, approachToUse string) (string, error) {
+	clientGemini := gemini.GetGeminiCLient()
+
+	// Construct the prompt
+	// Construct the prompt
+	prompt := fmt.Sprintf("Given the requirement:\n%s\n\nConsidering the %s stack, for %s, what's the ideal database for this use case?\nIf no database is needed, please reply with '**NoNeed**'. Reply in 1 word\n", input, stackToUse, approachToUse)
+
+	ctx := context.Background()
+
+	// Generate content using the Gemini client
+	resp, err := clientGemini.GenerateContent(ctx, genai.Text(prompt))
+	if err != nil {
+		return "", fmt.Errorf("error generating content: %v", err)
+	}
+	marshalResponse, _ := json.MarshalIndent(resp, "", "  ")
+
+	var generateResponse ContentResponse
+	if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
+		log.Fatal(err)
+	}
+	Database := ""
+	for _, cad := range *generateResponse.Candidates {
+		if cad.Content != nil {
+			for _, part := range cad.Content.Parts {
+				Database = part
+			}
+		}
+	}
+
+	return Database, nil
 }
