@@ -2,10 +2,29 @@ package processhandlers
 
 import (
 	"bufio"
+	"context"
+	"encoding/json"
 	"fmt"
+	"geminiProject/gemini"
+	"geminiProject/utils"
+	"log"
 	"os"
 	"strings"
+
+	"github.com/google/generative-ai-go/genai"
 )
+
+type Content struct {
+	Parts []string `json:Parts`
+	Role  string   `json:Role`
+}
+type Candidates struct {
+	Content *Content `json:Content`
+}
+
+type ContentResponse struct {
+	Candidates *[]Candidates `json:Candidates`
+}
 
 func ReadRequest() string {
 	//Start the promptReader
@@ -19,24 +38,47 @@ func ReadRequest() string {
 	}
 	userInput = strings.TrimSpace(userInput)
 
+	approachToUse, errorApproach := fetchApproach(userInput)
+	if errorApproach != nil {
+		fmt.Println("Error fetching approach:", errorApproach)
+		return ""
+	}
+	fmt.Print("Approach to use:", approachToUse)
+
+	//Return the user input
 	return userInput
 }
 
-//Call gemini client
-// clientGemini := gemini.GetGeminiCLient()
-// resp, err := clientGemini.GenerateContent(ctx, genai.Text(userInput))
-// if err != nil {
-// 	log.Fatal(err)
-// }
+func fetchApproach(input string) (string, error) {
+	clientGemini := gemini.GetGeminiCLient()
 
-// if len(resp.Candidates) > 0 {
-// 	firstCandidate := resp.Candidates[0]
-// 	content := firstCandidate.Content
-// 	parts := content.Parts[0]
-// 	fmt.Println("First candidate content parts:", parts)
+	// Construct the prompt
+	prompt := "Given the following approaches:\n"
+	for key := range utils.PathApproach {
+		prompt += "- " + key + "\n"
+	}
+	prompt += "\nWhat approach should be used for the following requirement:\n" + input + " \n please reply in one word only"
 
-// }
+	ctx := context.Background()
 
-// func fetchApproach(input string) {
+	// Generate content using the Gemini client
+	resp, err := clientGemini.GenerateContent(ctx, genai.Text(prompt))
+	if err != nil {
+		return "", fmt.Errorf("error generating content: %v", err)
+	}
+	marshalResponse, _ := json.MarshalIndent(resp, "", "  ")
 
-// }
+	var generateResponse ContentResponse
+	if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
+		log.Fatal(err)
+	}
+	for _, cad := range *generateResponse.Candidates {
+		if cad.Content != nil {
+			for _, part := range cad.Content.Parts {
+				return part, nil
+			}
+		}
+	}
+
+	return "No suitable approach found", nil
+}

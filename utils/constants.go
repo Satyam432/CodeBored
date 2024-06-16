@@ -1,14 +1,14 @@
 package utils
 
-var pathApproach = map[string]interface{}{
-	"Script":          nil,
-	"Static Website":  nil,
-	"Dynamic Website": nil,
-	"Mobile App": map[string]interface{}{
+var PathApproach = map[string]interface{}{
+	"Script":  nil,
+	"Static":  nil,
+	"Dynamic": nil,
+	"Mobile": map[string]interface{}{
 		"Native": nil,
 		"Hybrid": nil,
 	},
-	"Full Development": map[string]interface{}{
+	"Full": map[string]interface{}{
 		"Client-side": nil,
 		"Server-side": nil,
 	},
