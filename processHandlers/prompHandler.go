@@ -35,7 +35,7 @@ func ReadRequest() string {
 	// 	return ""
 	// }
 	// userInput = strings.TrimSpace(userInput)
-	userInput := "terminal based game"
+	userInput := "code for travel agency website using reactJs and dynamoDB using engineerning blogs, you are a tech lead in uber"
 	//Apporach to use
 	approachToUse, errorApproach := fetchApproach(userInput)
 	if errorApproach != nil {
@@ -67,6 +67,12 @@ func ReadRequest() string {
 		return ""
 	}
 
+	baseLogic, errBaseLogic := BaseLogic(userInput, stackToUse, approachToUse, databaseToUse, projectStructure)
+	if errBaseLogic != nil {
+		fmt.Println("Error fetching Base Logic:", errBaseLogic)
+		return ""
+	}
+	fmt.Println("baselogic:", baseLogic)
 	//Language to use
 	//Return the user input
 	return userInput
@@ -129,16 +135,9 @@ func fetchBestStack(input string, approachToUse string) (string, error) {
 	}
 	var bestStack string
 	for _, cad := range *generateResponse.Candidates {
-		if cad.Content != nil {
-			for _, part := range cad.Content.Parts {
-				bestStack = part
-			}
+		if cad.Content != nil && len(cad.Content.Parts) > 0 {
+			bestStack = cad.Content.Parts[0]
 		}
-	}
-	var bestStackMap map[string]interface{}
-	err = json.Unmarshal([]byte(bestStack), &bestStackMap)
-	if err != nil {
-		return "", fmt.Errorf("error unmarshalling project structure: %v", err)
 	}
 
 	return bestStack, nil

@@ -22,7 +22,7 @@ type ContentResponse struct {
 	Candidates *[]Candidates `json:Candidates`
 }
 
-func CodeDesigner(input string, stackToUse string, approachToUse string, databaseToUse string) (map[string]interface{}, error) {
+func CodeDesigner(input string, stackToUse string, approachToUse string, databaseToUse string) (string, error) {
 	clientGemini := gemini.GetGeminiCLient()
 	// Construct the prompt
 	prompt := fmt.Sprintf(
@@ -39,17 +39,17 @@ func CodeDesigner(input string, stackToUse string, approachToUse string, databas
 	// Generate content using the Gemini client
 	resp, err := clientGemini.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
-		return nil, fmt.Errorf("error generating content: %v", err)
+		return "", fmt.Errorf("error generating content: %v", err)
 	}
 
 	if len(resp.Candidates) == 0 {
-		return nil, fmt.Errorf("no candidates found")
+		return "", fmt.Errorf("no candidates found")
 	}
 	marshalResponse, _ := json.MarshalIndent(resp, "", "  ")
 
 	var generateResponse ContentResponse
 	if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// Extract the project structure from the response
@@ -63,17 +63,10 @@ func CodeDesigner(input string, stackToUse string, approachToUse string, databas
 	}
 
 	if projectStructure == "" {
-		return nil, fmt.Errorf("no suitable project structure found")
+		return "", fmt.Errorf("no suitable project structure found")
 	}
 	projectStructure = strings.TrimPrefix(projectStructure, "```json\n")
 	projectStructure = strings.TrimSuffix(projectStructure, "\n```")
 
-	// Parse the project structure as JSON
-	var projectStructureMap map[string]interface{}
-	err = json.Unmarshal([]byte(projectStructure), &projectStructureMap)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling project structure: %v", err)
-	}
-
-	return projectStructureMap, nil
+	return projectStructure, nil
 }
