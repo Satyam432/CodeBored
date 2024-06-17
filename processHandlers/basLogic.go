@@ -13,8 +13,8 @@ func BaseLogic(input string, stackToUse string, approachToUse string, databaseTo
 	prompt := fmt.Sprintf("Given the approach: %s,\n", approachToUse)
 	prompt += fmt.Sprintf("Stack to use:\n```json\n%s```,\n", stackToUse)
 	prompt += fmt.Sprintf("Database to use: %s\n", databaseToUse)
-	prompt += fmt.Sprintf(", please generate the well described logic for each file in the project structure :\n%s", projectStructure)
-
+	prompt += fmt.Sprintf(", please generate the *well described logic* for each file in the project structure :\n%s", projectStructure)
+	fmt.Println("Ultimate prompt:", prompt)
 	ctx := context.Background()
 	clientGemini := gemini.GetGeminiCLient()
 	// Generate content using the Gemini client

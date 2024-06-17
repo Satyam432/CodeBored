@@ -35,7 +35,7 @@ func ReadRequest() string {
 	// 	return ""
 	// }
 	// userInput = strings.TrimSpace(userInput)
-	userInput := "code for travel agency website using reactJs and dynamoDB using engineerning blogs, you are a tech lead in uber"
+	userInput := "terminal base game"
 	//Apporach to use
 	approachToUse, errorApproach := fetchApproach(userInput)
 	if errorApproach != nil {
@@ -73,6 +73,14 @@ func ReadRequest() string {
 		return ""
 	}
 	fmt.Println("baselogic:", baseLogic)
+
+	//code, errorCode := codeDeveloper(userInput, stackToUse, approachToUse, databaseToUse, projectStructure, baseLogic)
+	code, errorCode := codeDeveloper(userInput, stackToUse, approachToUse, databaseToUse, projectStructure, baseLogic)
+	fmt.Println("Code:", code)
+	if errorCode != nil {
+		fmt.Println("Error fetching code:", errorCode)
+		return ""
+	}
 	//Language to use
 	//Return the user input
 	return userInput
@@ -96,7 +104,8 @@ func fetchApproach(input string) (string, error) {
 		return "", fmt.Errorf("error generating content: %v", err)
 	}
 	marshalResponse, _ := json.MarshalIndent(resp, "", "  ")
-
+	a := string(marshalResponse)
+	fmt.Println("RANDOM A:", a)
 	var generateResponse ContentResponse
 	if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
 		log.Fatal(err)
@@ -118,7 +127,7 @@ func fetchBestStack(input string, approachToUse string) (string, error) {
 	// Construct the prompt
 	// Construct the prompt
 	prompt := fmt.Sprintf("Given the requirement:\n%s\n", input)
-	prompt += fmt.Sprintf("\n tell me just the name of **ideal** languaguage or framework stack which we should use for, as a json string %s?\n", approachToUse)
+	prompt += fmt.Sprintf("\n tell me just the name of **ideal** languaguage or framework stack which we should use for %s?\n, return clean string", approachToUse)
 
 	ctx := context.Background()
 
@@ -128,7 +137,8 @@ func fetchBestStack(input string, approachToUse string) (string, error) {
 		return "", fmt.Errorf("error generating content: %v", err)
 	}
 	marshalResponse, _ := json.MarshalIndent(resp, "", "  ")
-
+	b := string(marshalResponse)
+	fmt.Println("RANDON B:", b)
 	var generateResponse ContentResponse
 	if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
 		log.Fatal(err)
