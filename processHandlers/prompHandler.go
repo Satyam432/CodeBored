@@ -1,6 +1,7 @@
 package processhandlers
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"geminiProject/utils"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/generative-ai-go/genai"
@@ -29,15 +31,15 @@ type ContentResponse struct {
 func ReadRequest() string {
 	//Start the promptReader
 	// Receive input from the user
-	// reader := bufio.NewReader(os.Stdin)
-	// fmt.Println("Enter input: ")
-	// userInput, err := reader.ReadString('\n')
-	// if err != nil {
-	// 	fmt.Println("Error reading input:", err)
-	// 	return ""
-	// }
-	// userInput = strings.TrimSpace(userInput)
-	userInput := "simple 2 player game"
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Enter input: ")
+	userInput, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading input:", err)
+		return ""
+	}
+	userInput = strings.TrimSpace(userInput)
+	// userInput := "simple 2 player game"
 	//Apporach to use
 	approachToUse, errorApproach := fetchApproach(userInput)
 	if errorApproach != nil {
