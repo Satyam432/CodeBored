@@ -25,7 +25,7 @@ func GeminiInit() {
 	//defer client.Close()
 
 	// The Gemini 1.5 models are versatile and work with most use cases
-	Geminimodel = client.GenerativeModel("gemini-1.5-flash")
+	Geminimodel = client.GenerativeModel("gemini-1.5-pro")
 	if Geminimodel == nil {
 		log.Fatal("Failed to load Gemini model")
 	} else {
