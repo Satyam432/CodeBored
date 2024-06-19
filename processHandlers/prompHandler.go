@@ -1,6 +1,7 @@
 package processhandlers
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,9 @@ import (
 	"geminiProject/gemini"
 	"geminiProject/utils"
 	"log"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/google/generative-ai-go/genai"
 )
@@ -27,15 +31,15 @@ type ContentResponse struct {
 func ReadRequest() string {
 	//Start the promptReader
 	// Receive input from the user
-	// reader := bufio.NewReader(os.Stdin)
-	// fmt.Println("Enter input: ")
-	// userInput, err := reader.ReadString('\n')
-	// if err != nil {
-	// 	fmt.Println("Error reading input:", err)
-	// 	return ""
-	// }
-	// userInput = strings.TrimSpace(userInput)
-	userInput := "terminal based game"
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Enter input: ")
+	userInput, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading input:", err)
+		return ""
+	}
+	userInput = strings.TrimSpace(userInput)
+	// userInput := "simple 2 player game"
 	//Apporach to use
 	approachToUse, errorApproach := fetchApproach(userInput)
 	if errorApproach != nil {
@@ -51,7 +55,7 @@ func ReadRequest() string {
 		return ""
 	}
 	fmt.Print("Stack to use:", stackToUse)
-
+	time.Sleep(5 * time.Second)
 	//database to use
 	databaseToUse, errorDatabase := fetchDatabase(userInput, stackToUse, approachToUse)
 	fmt.Println("Database to use:", databaseToUse)
@@ -59,14 +63,43 @@ func ReadRequest() string {
 		fmt.Println("Error fetching Database:", errorDatabase)
 		return ""
 	}
-
+	time.Sleep(5 * time.Second)
 	projectStructure, errorStructure := eventhandlers.CodeDesigner(userInput, stackToUse, approachToUse, databaseToUse)
 	fmt.Println("Project Structure:", projectStructure)
 	if errorStructure != nil {
 		fmt.Println("Error fetching Structure:", errorStructure)
 		return ""
 	}
+	time.Sleep(5 * time.Second)
+	baseLogic, errBaseLogic := BaseLogic(userInput, stackToUse, approachToUse, databaseToUse, projectStructure)
+	if errBaseLogic != nil {
+		fmt.Println("Error fetching Base Logic:", errBaseLogic)
+		return ""
+	}
+	fmt.Println("baselogic:", baseLogic)
+	time.Sleep(5 * time.Second)
+	//code, errorCode := codeDeveloper(userInput, stackToUse, approachToUse, databaseToUse, projectStructure, baseLogic)
+	code, errorCode := codeDeveloper(userInput, stackToUse, approachToUse, databaseToUse, projectStructure, baseLogic)
+	fmt.Println("Code:", code)
+	if errorCode != nil {
+		fmt.Println("Error fetching code:", errorCode)
+		return ""
+	}
 
+	// Create and write to the file at once
+	file, err := os.Create("output.txt")
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+	}
+	defer file.Close()
+
+	file.WriteString(fmt.Sprintf("User Input: %s\n", userInput))
+	file.WriteString(fmt.Sprintf("Approach to use: %s\n", approachToUse))
+	file.WriteString(fmt.Sprintf("Stack to use: %s\n", stackToUse))
+	file.WriteString(fmt.Sprintf("Database to use: %s\n", databaseToUse))
+	file.WriteString(fmt.Sprintf("Project Structure: %s\n", projectStructure))
+	file.WriteString(fmt.Sprintf("Base logic: %s\n", baseLogic))
+	file.WriteString(fmt.Sprintf("Code: %s\n", code))
 	//Language to use
 	//Return the user input
 	return userInput
@@ -90,7 +123,8 @@ func fetchApproach(input string) (string, error) {
 		return "", fmt.Errorf("error generating content: %v", err)
 	}
 	marshalResponse, _ := json.MarshalIndent(resp, "", "  ")
-
+	a := string(marshalResponse)
+	fmt.Println("RANDOM A:", a)
 	var generateResponse ContentResponse
 	if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
 		log.Fatal(err)
@@ -112,7 +146,7 @@ func fetchBestStack(input string, approachToUse string) (string, error) {
 	// Construct the prompt
 	// Construct the prompt
 	prompt := fmt.Sprintf("Given the requirement:\n%s\n", input)
-	prompt += fmt.Sprintf("\n tell me just the name of **ideal** languaguage or framework stack which we should use for, as a json string %s?\n", approachToUse)
+	prompt += fmt.Sprintf("\n tell me just the name of **ideal** languaguage or framework stack which we should use for %s?\n, return clean string", approachToUse)
 
 	ctx := context.Background()
 
@@ -122,23 +156,17 @@ func fetchBestStack(input string, approachToUse string) (string, error) {
 		return "", fmt.Errorf("error generating content: %v", err)
 	}
 	marshalResponse, _ := json.MarshalIndent(resp, "", "  ")
-
+	b := string(marshalResponse)
+	fmt.Println("RANDON B:", b)
 	var generateResponse ContentResponse
 	if err := json.Unmarshal(marshalResponse, &generateResponse); err != nil {
 		log.Fatal(err)
 	}
 	var bestStack string
 	for _, cad := range *generateResponse.Candidates {
-		if cad.Content != nil {
-			for _, part := range cad.Content.Parts {
-				bestStack = part
-			}
+		if cad.Content != nil && len(cad.Content.Parts) > 0 {
+			bestStack = cad.Content.Parts[0]
 		}
-	}
-	var bestStackMap map[string]interface{}
-	err = json.Unmarshal([]byte(bestStack), &bestStackMap)
-	if err != nil {
-		return "", fmt.Errorf("error unmarshalling project structure: %v", err)
 	}
 
 	return bestStack, nil

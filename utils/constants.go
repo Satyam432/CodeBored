@@ -14,4 +14,5 @@ var PathApproach = map[string]interface{}{
 	},
 }
 
+// this is a rule
 var CodeRulesArray = []string{"Modular", "Clean Code", "Easy to Read", "Easy to Customize", "Basic Security (Validation)"}
