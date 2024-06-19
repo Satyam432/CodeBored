@@ -8,6 +8,7 @@ import (
 	"geminiProject/gemini"
 	"geminiProject/utils"
 	"log"
+	"os"
 	"time"
 
 	"github.com/google/generative-ai-go/genai"
@@ -36,7 +37,7 @@ func ReadRequest() string {
 	// 	return ""
 	// }
 	// userInput = strings.TrimSpace(userInput)
-	userInput := "terminal base game"
+	userInput := "simple 2 player game"
 	//Apporach to use
 	approachToUse, errorApproach := fetchApproach(userInput)
 	if errorApproach != nil {
@@ -60,21 +61,21 @@ func ReadRequest() string {
 		fmt.Println("Error fetching Database:", errorDatabase)
 		return ""
 	}
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 	projectStructure, errorStructure := eventhandlers.CodeDesigner(userInput, stackToUse, approachToUse, databaseToUse)
 	fmt.Println("Project Structure:", projectStructure)
 	if errorStructure != nil {
 		fmt.Println("Error fetching Structure:", errorStructure)
 		return ""
 	}
-	time.Sleep(1 * time.Second)
+	time.Sleep(5 * time.Second)
 	baseLogic, errBaseLogic := BaseLogic(userInput, stackToUse, approachToUse, databaseToUse, projectStructure)
 	if errBaseLogic != nil {
 		fmt.Println("Error fetching Base Logic:", errBaseLogic)
 		return ""
 	}
 	fmt.Println("baselogic:", baseLogic)
-
+	time.Sleep(5 * time.Second)
 	//code, errorCode := codeDeveloper(userInput, stackToUse, approachToUse, databaseToUse, projectStructure, baseLogic)
 	code, errorCode := codeDeveloper(userInput, stackToUse, approachToUse, databaseToUse, projectStructure, baseLogic)
 	fmt.Println("Code:", code)
@@ -82,6 +83,21 @@ func ReadRequest() string {
 		fmt.Println("Error fetching code:", errorCode)
 		return ""
 	}
+
+	// Create and write to the file at once
+	file, err := os.Create("output.txt")
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+	}
+	defer file.Close()
+
+	file.WriteString(fmt.Sprintf("User Input: %s\n", userInput))
+	file.WriteString(fmt.Sprintf("Approach to use: %s\n", approachToUse))
+	file.WriteString(fmt.Sprintf("Stack to use: %s\n", stackToUse))
+	file.WriteString(fmt.Sprintf("Database to use: %s\n", databaseToUse))
+	file.WriteString(fmt.Sprintf("Project Structure: %s\n", projectStructure))
+	file.WriteString(fmt.Sprintf("Base logic: %s\n", baseLogic))
+	file.WriteString(fmt.Sprintf("Code: %s\n", code))
 	//Language to use
 	//Return the user input
 	return userInput
