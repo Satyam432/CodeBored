@@ -55,7 +55,7 @@ func ReadRequest() string {
 		return ""
 	}
 	fmt.Print("Stack to use:", stackToUse)
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 	//database to use
 	databaseToUse, errorDatabase := fetchDatabase(userInput, stackToUse, approachToUse)
 	fmt.Println("Database to use:", databaseToUse)
@@ -63,21 +63,21 @@ func ReadRequest() string {
 		fmt.Println("Error fetching Database:", errorDatabase)
 		return ""
 	}
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 	projectStructure, errorStructure := eventhandlers.CodeDesigner(userInput, stackToUse, approachToUse, databaseToUse)
 	fmt.Println("Project Structure:", projectStructure)
 	if errorStructure != nil {
 		fmt.Println("Error fetching Structure:", errorStructure)
 		return ""
 	}
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 	baseLogic, errBaseLogic := BaseLogic(userInput, stackToUse, approachToUse, databaseToUse, projectStructure)
 	if errBaseLogic != nil {
 		fmt.Println("Error fetching Base Logic:", errBaseLogic)
 		return ""
 	}
 	fmt.Println("baselogic:", baseLogic)
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 	//code, errorCode := codeDeveloper(userInput, stackToUse, approachToUse, databaseToUse, projectStructure, baseLogic)
 	code, errorCode := codeDeveloper(userInput, stackToUse, approachToUse, databaseToUse, projectStructure, baseLogic)
 	fmt.Println("Code:", code)
